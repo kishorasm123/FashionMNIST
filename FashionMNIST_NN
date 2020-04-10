@@ -1,0 +1,97 @@
+# TensorFlow and tf.keras
+import tensorflow as tf
+from tensorflow import keras
+
+# Helper libraries
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Loading images from dataset
+fashion_mnist = keras.datasets.fashion_mnist
+(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
+
+# Available classifications in the dataset.
+class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+               'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+# Displaying some information about training & test data.
+print(train_images.shape)  # 2D array containing training image data.
+print(train_labels.shape)  # 2D array containing training image label data.
+print(test_images.shape)  # 2D array containing test image data.
+print(test_labels.shape)  # 2D array containing test image label data.
+
+
+# Function to Display the given image.
+def DisplayImage(image):
+    plt.figure()
+    plt.imshow(image)
+    plt.colorbar()
+    plt.grid(True)
+    plt.show()
+
+
+# Displays first 25 images of the given set with its labels.
+def DisplayImages(images, labels):
+    plt.figure(figsize=(10, 10))
+    for i in range(25):
+        plt.subplot(5, 5, i + 1)
+        plt.xticks([])
+        plt.yticks([])
+        plt.grid(True)
+        plt.imshow(images[i], cmap=plt.cm.binary)
+        plt.xlabel(class_names[labels[i]])
+    plt.show()
+
+
+# Displaying sample image.
+# DisplayImage(train_images[0])
+
+# As the image grey pixel values varies from 0 to 255, we are converting it to 0 to 1.
+train_images = train_images / 255.0
+test_images = test_images / 255.0
+
+# Displaying sample image.
+# DisplayImage(train_images[0])
+
+# Displaying first 25 images.
+# DisplayImages(train_images, train_labels)
+
+# Defining layers to build up the model
+
+# Flatten layer / Input layer converts 2D array to 1D array. (inputs 28,28 are the  sizes of 2D array)
+flattenLayer = keras.layers.Flatten(input_shape=(28, 28))
+
+# A hidden or denser layer is defined which process the input. (units =120 defines the total number of neurons in
+# that layer, activation defines the activation function to be applied on each neuron.
+denseLayer1 = keras.layers.Dense(units=120, activation=keras.activations.relu)
+
+# Last layer / Output layer is defined which gives the output (units =10 defines total number of output classes we
+# have [image types] activation defines the activation function to be applied on each neuron.
+outputLayer = keras.layers.Dense(units=10, activation=keras.activations.softmax)
+
+# Arranging the layers as per the required order
+model = keras.Sequential([flattenLayer, denseLayer1, outputLayer])
+
+# Compiling the model.
+model.compile(optimizer=keras.optimizers.Adam(), loss=keras.losses.sparse_categorical_crossentropy, metrics=["accuracy"])
+
+# Training the model with training set.
+model.fit(train_images, train_labels, epochs=1)
+
+# Evaluating the model with test set.
+test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
+print('\nTest accuracy:', test_acc)
+
+# Predicting / testing the model against SET of images.
+predictedResult = model.predict(test_images)
+indexOfImageToTest = 1
+predictedClassIndex = np.argmax(predictedResult[indexOfImageToTest])
+print("Prediction result of image number: " + str(indexOfImageToTest) + " is = " + class_names[predictedClassIndex])
+
+# Predicting / testing the model against SINGLE image.
+indexOfImageToTest = 5
+imgToTest = (np.expand_dims(test_images[indexOfImageToTest], 0))  # Expanding the single image into array of (28 * 28)
+predictedResult = model.predict(imgToTest)
+indexOfElementResult = 0
+predictedClassIndex = np.argmax(predictedResult[indexOfElementResult])
+print("Prediction result of image number: " + str(indexOfImageToTest) + " is = " + class_names[predictedClassIndex])
