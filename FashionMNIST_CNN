@@ -34,10 +34,6 @@ test_images = test_images / 255
 # DisplayImage(train_images[0])
 
 # Creating Conv2D layers for the model.
-
-# Adding flatten layer / Input layer converts 2D array to 1D array. (inputs 28,28 are the  sizes of 2D array)
-# flattenLayer = keras.layers.Flatten(input_shape=(28, 28))
-
 # Adding Conv2D layer1
 conv2DLayer1 = keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1))  # Here
 # input_shape=(28, 28, 1)  specifies 3D array as input 28 => x,y of the image and 1 => the feature of the image (grey
