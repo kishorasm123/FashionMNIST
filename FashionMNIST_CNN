@@ -1,0 +1,100 @@
+# Importing required libraries.
+import numpy as np
+from tensorflow import keras
+import matplotlib.pyplot as plt
+from tensorflow.keras import backend as k
+
+# Importing FashionMNIST dataset from keras data set & loading it.
+fashionMNISTDataset = keras.datasets.fashion_mnist
+(train_images, train_labels), (test_images, test_labels) = fashionMNISTDataset.load_data()
+
+# Displaying some information about data set.
+print(train_images.shape)
+print(train_labels.shape)
+print(test_images.shape)
+print(test_labels.shape)
+
+
+# Function to Display the given image.
+def DisplayImage(image):
+    plt.imshow(image)
+    plt.colorbar()
+    plt.grid(True)
+    plt.show()
+
+
+# Displaying a sample image.
+# DisplayImage(train_images[0])
+
+# Pixel varies from 0 to 255 in the images, so converting the pixel values between the range of o to 1.
+train_images = train_images / 255
+test_images = test_images / 255
+
+# Displaying a sample image.
+# DisplayImage(train_images[0])
+
+# Creating Conv2D layers for the model.
+
+# Adding flatten layer / Input layer converts 2D array to 1D array. (inputs 28,28 are the  sizes of 2D array)
+# flattenLayer = keras.layers.Flatten(input_shape=(28, 28))
+
+# Adding Conv2D layer1
+conv2DLayer1 = keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1))  # Here
+# input_shape=(28, 28, 1)  specifies 3D array as input 28 => x,y of the image and 1 => the feature of the image (grey
+# scale) If it is color image(RGB), then it will be =3
+
+# Adding Conv2D layer2
+conv2DLayer2 = keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu')
+
+# Adding maxpooling layer1
+maxPoolingLayer1 = keras.layers.MaxPool2D(pool_size=(2, 2))
+
+# Adding Dropouts (deactivates neurons randomly, so that every neuron gets learnt equally)
+dropOutLayer1 = keras.layers.Dropout(0.25)
+
+# Adding regular dense layers,
+
+# Flatten layer
+flattenLayer1 = keras.layers.Flatten()
+
+# Dense / Hidden layer
+denseLayer1 = keras.layers.Dense(units=128, activation='relu')
+
+# Dropout layer
+dropOutLayer2 = keras.layers.Dropout(0.1)
+
+# Output layer
+outputLayer = keras.layers.Dense(units=10, activation='softmax')
+
+# Compiling model
+model = keras.Sequential(
+    [conv2DLayer1, conv2DLayer2, maxPoolingLayer1, dropOutLayer1, flattenLayer1, denseLayer1, dropOutLayer2,
+     outputLayer])
+model.compile(loss=keras.losses.categorical_crossentropy, optimizer='adam', metrics=['accuracy'])
+
+# Conv2D accepts training input in 3D array format, so converting or 2D image to 3D array format
+x_train = np.array(train_images)
+y_train = np.array(train_labels)
+x_test = np.array(test_images)
+y_test = np.array(test_labels)
+train_images_modified, test_images_modified = None, None
+
+# Modifying the data according to the channel position.
+if k.image_data_format() == "channels_first":
+    train_images_modified = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], x_train.shape[2])
+    test_images_modified = x_test.reshape(x_test.shape[0], 1, x_test.shape[1], x_test.shape[2])
+else:
+    train_images_modified = x_train.reshape(x_train.shape[0], x_train.shape[1], x_train.shape[2], 1)
+    test_images_modified = x_test.reshape(x_test.shape[0], x_test.shape[1], x_test.shape[2], 1)
+
+# convert class vectors to binary class matrices
+y_train = keras.utils.to_categorical(y_train, 10)
+y_test = keras.utils.to_categorical(y_test, 10)
+
+# Training the model
+model.fit(x=train_images_modified, y=y_train, epochs=10, verbose=1)
+
+# Evaluating the model
+score = model.evaluate(test_images_modified, y_test, verbose=2)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
